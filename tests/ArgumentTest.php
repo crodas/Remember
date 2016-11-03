@@ -16,7 +16,7 @@ class ArgumentTest extends PHPUnit_Framework_TestCase
     {
         $x = Remember::init('foobar');
         $path1 = $x->getStoragePath(__FILE__);
-        $path2 = $x->getStoragePath([__FILE__]);
+        $path2 = $x->getStoragePath(array(__FILE__));
         $this->assertNotEquals($path1, $path2);
         $this->assertTrue(strpos($path1, sys_get_temp_dir()) === 0);
         $this->assertTrue(strpos($path2, sys_get_temp_dir()) === 0);
