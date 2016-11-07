@@ -9,12 +9,12 @@ class ArgumentTest extends PHPUnit_Framework_TestCase
      */
     public function testInvalidName()
     {
-        Remember::init('foobar/xxx');
+        Remember::ns('foobar/xxx');
     }
 
     public function testDirectoryInvalidators()
     {
-        $x = Remember::init('foobar');
+        $x = Remember::ns('foobar');
         $files = $x->normalizePAth(__DIR__ . '/../src');
         $this->assertTrue(is_array($files));
         $this->assertTrue(is_dir($files[0]));
@@ -23,7 +23,7 @@ class ArgumentTest extends PHPUnit_Framework_TestCase
 
     public function testSimpleWrite()
     {
-        $x = Remember::init('foobar');
+        $x = Remember::ns('foobar');
         $path1 = $x->getStoragePath(__FILE__);
         $path2 = $x->getStoragePath(array(__FILE__));
         $this->assertNotEquals($path1, $path2);
@@ -36,8 +36,8 @@ class ArgumentTest extends PHPUnit_Framework_TestCase
 
     public function testDifferentNamespaces()
     {
-        $x = Remember::init('foobar');
-        $y = Remember::init('barfoo');
+        $x = Remember::ns('foobar');
+        $y = Remember::ns('barfoo');
         $path1 = $x->getStoragePath(__FILE__);
         $path2 = $y->getStoragePath(__FILE__);
         $this->assertNotEquals($path1, $path2);

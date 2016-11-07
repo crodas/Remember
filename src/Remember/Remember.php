@@ -38,8 +38,10 @@ namespace Remember;
 
 use crodas\FileUtil\File;
 use InvalidArgumentException;
+use DirectoryIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use FilesystemIterator;
 
 class Remember
 {
@@ -60,13 +62,34 @@ class Remember
         self::$dir = $dir;
     }
 
-    public static function init($prefix)
+    public static function ns($prefix)
     {
         if (empty(self::$instances[$prefix])) {
             self::$instances[$prefix] = new self($prefix);
         }
 
         return self::$instances[$prefix];
+    }
+
+    public static function getNamespaces()
+    {
+        $namespaces = array();
+        $files = new DirectoryIterator(self::$dir);
+        foreach ($files as $file) {
+            if($file->isDot() || $file->isFile()) {
+                continue;
+            }
+            $namespaces[] = $file->GetBaseName();
+        }
+
+        return $namespaces;
+    }
+
+    public function cleanup()
+    {
+        foreach (glob(self::$dir . '/' . $this->prefix . '/*.php') as $file) {
+            unlink($file);
+        }
     }
 
     public function getStoragePath($files)
@@ -88,7 +111,7 @@ class Remember
             $file = realpath($file);
             $nFiles[] = $file;
             if (is_dir($file)) {
-                $iter = new RecursiveDirectoryIterator($file, \FilesystemIterator::SKIP_DOTS);
+                $iter = new RecursiveDirectoryIterator($file, FilesystemIterator::SKIP_DOTS);
                 $cache = array();
                 foreach (new RecursiveIteratorIterator($iter) as $file) {
                     $nFiles[] = (string)$file;

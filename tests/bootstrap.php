@@ -1,24 +1,10 @@
 <?php
 
+use Remember\Remember;
+
 require __DIR__ . '/../vendor/autoload.php';
 
+Remember::setDirectory(__DIR__ . '/tmp/');
+Remember::ns('foobar')->cleanup();
 
-function rrmdir($src) {
-    $dir = opendir($src);
-    while(false !== ( $file = readdir($dir)) ) {
-        if (( $file != '.' ) && ( $file != '..' )) {
-            $full = $src . '/' . $file;
-            if ( is_dir($full) ) {
-                rrmdir($full);
-            } else {
-                unlink($full);
-            }
-        }
-    }
-    closedir($dir);
-    rmdir($src);
-}
-
-if (is_dir(__DIR__ . '/tmp')) {
-    rrmdir(__DIR__ . '/tmp');
-}
+Remember::setDirectory(sys_get_temp_dir() . '/php-cache');

@@ -6,7 +6,7 @@ class RememberTest extends PHPUnit_Framework_TestCase
 {
     public function testFileDoesNotExists()
     {
-        $cache = Remember::init('foobar');
+        $cache = Remember::ns('foobar');
         $cache->get(__FILE__, $isValid);
         $this->assertFalse($isValid);
     }
@@ -14,7 +14,7 @@ class RememberTest extends PHPUnit_Framework_TestCase
     public function testFileGeneration()
     {
         Remember::setDirectory(__DIR__ . '/tmp/');
-        $cache = Remember::init('foobar');
+        $cache = Remember::ns('foobar');
         $cache->get(__FILE__, $isValid);
         $this->assertFalse($isValid);
 
@@ -30,7 +30,7 @@ class RememberTest extends PHPUnit_Framework_TestCase
         $tmp = __DIR__ . '/tmp/demo.txt';
         touch($tmp, time()-1);
 
-        $cache = Remember::init('foobar');
+        $cache = Remember::ns('foobar');
         $cache->get($tmp, $isValid);
 
         $cache->store($tmp, $v = rand(0, 0xfffff));
@@ -46,14 +46,14 @@ class RememberTest extends PHPUnit_Framework_TestCase
 
     public function testDirectoryNotFound()
     {
-        $x = Remember::init('foobar');
+        $x = Remember::ns('foobar');
         $x->get(__DIR__ . '/tmp/', $isValid);
         $this->assertFalse($isValid);
     }
 
     public function testDirectoryWrite1()
     {
-        $x = Remember::init('foobar');
+        $x = Remember::ns('foobar');
         $dir = __DIR__ . '///tmp///';
         touch($dir, time() - 100);
         $x->store($dir, $rand = rand());
@@ -74,7 +74,7 @@ class RememberTest extends PHPUnit_Framework_TestCase
         $dir = __DIR__ . '/../src';
         $file = $dir . '/Remember/foo.txt';
         touch($file, time() - 100);
-        $x = Remember::init('foobar');
+        $x = Remember::ns('foobar');
         $x->store($dir, $rand = rand());
 
         $val = $x->get($dir, $isValid);
@@ -94,7 +94,7 @@ class RememberTest extends PHPUnit_Framework_TestCase
         $dir = __DIR__ . '/../src';
         $file = $dir . '/Remember/foo.txt';
         touch($file);
-        $x = Remember::init('foobar');
+        $x = Remember::ns('foobar');
         $x->store($dir, $rand = rand());
 
         $val = $x->get($dir, $isValid);
@@ -104,6 +104,13 @@ class RememberTest extends PHPUnit_Framework_TestCase
         unlink($file);
         $val = $x->get($file, $isValid);
         $this->assertFalse($isValid);
+    }
+
+    public function testGetNamespaces()
+    {
+        $namespaces = Remember::getNamespaces();
+        $this->assertTrue(is_array($namespaces));
+        $this->assertFalse(empty($namespaces));
     }
 }
 
