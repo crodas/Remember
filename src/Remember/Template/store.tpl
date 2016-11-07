@@ -5,8 +5,8 @@
  *
  */
 
-@foreach ((array)$file as $f) {
-if (!is_readable({{@realpath($f)}}) || filemtime({{@realpath($f)}}) > {{filemtime($f)}}) {
+@foreach ((array)$files as $f) {
+if (!is_readable({{@$f}}) || filemtime({{@$f}}) > {{filemtime($f)}}) {
     $valid = false;
     return;
 }

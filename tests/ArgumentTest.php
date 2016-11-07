@@ -12,6 +12,15 @@ class ArgumentTest extends PHPUnit_Framework_TestCase
         Remember::init('foobar/xxx');
     }
 
+    public function testDirectoryInvalidators()
+    {
+        $x = Remember::init('foobar');
+        $files = $x->normalizePAth(__DIR__ . '/../src');
+        $this->assertTrue(is_array($files));
+        $this->assertTrue(is_dir($files[0]));
+        $this->assertFalse(is_dir($files[1]));
+    }
+
     public function testSimpleWrite()
     {
         $x = Remember::init('foobar');

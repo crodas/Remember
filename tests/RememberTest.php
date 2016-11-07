@@ -51,21 +51,59 @@ class RememberTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($isValid);
     }
 
-    public function testDirectoryWrite()
+    public function testDirectoryWrite1()
     {
         $x = Remember::init('foobar');
-        $x->store(__DIR__ . '///tmp///', $rand = rand());
+        $dir = __DIR__ . '///tmp///';
+        touch($dir, time() - 100);
+        $x->store($dir, $rand = rand());
 
 
         $val = $x->get(__DIR__ . '/tmp/', $isValid);
         $this->assertTrue($isValid);
         $this->assertEquals($val, $rand);
 
-        sleep(1);
         touch(__DIR__ . '/tmp/foo');
         $val = $x->get(__DIR__ . '/tmp/', $isValid);
         $this->assertFalse($isValid);
+    }
 
+
+    public function testDirectoryNestedUpdate()
+    {
+        $dir = __DIR__ . '/../src';
+        $file = $dir . '/Remember/foo.txt';
+        touch($file, time() - 100);
+        $x = Remember::init('foobar');
+        $x->store($dir, $rand = rand());
+
+        $val = $x->get($dir, $isValid);
+        $this->assertTrue($isValid);
+        $this->assertEquals($val, $rand);
+
+        touch($file);
+        $val = $x->get($file, $isValid);
+        $this->assertFalse($isValid);
+    }
+
+    /**
+     *  @dependsOn testDirectoryNestedUpdate
+     */
+    public function testDirectoryDelete()
+    {
+        $dir = __DIR__ . '/../src';
+        $file = $dir . '/Remember/foo.txt';
+        touch($file);
+        $x = Remember::init('foobar');
+        $x->store($dir, $rand = rand());
+
+        $val = $x->get($dir, $isValid);
+        $this->assertTrue($isValid);
+        $this->assertEquals($val, $rand);
+
+        unlink($file);
+        $val = $x->get($file, $isValid);
+        $this->assertFalse($isValid);
     }
 }
 

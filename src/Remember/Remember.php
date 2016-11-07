@@ -38,6 +38,8 @@ namespace Remember;
 
 use crodas\FileUtil\File;
 use InvalidArgumentException;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 class Remember
 {
@@ -67,34 +69,52 @@ class Remember
         return self::$instances[$prefix];
     }
 
-    public function getStoragePath($file)
+    public function getStoragePath($files)
     {
-        if (is_string($file)) {
-            $file = realpath($file);
+        if (is_string($files)) {
+            $files = realpath($files);
         } else {
-            foreach ($file as $i => $f) {
-                $file[$i] = realpath($f);
+            foreach ($files as $i => $f) {
+                $files[$i] = realpath($f);
             }
         }
 
-        return self::$dir . '/' . $this->prefix . '/' . md5(serialize($file)) . '.php';
+        return self::$dir . '/' . $this->prefix . '/' . md5(serialize($files)) . '.php';
     }
 
-    public function store($file, $data)
+    public function normalizePath($files) {
+        $nFiles = array();
+        foreach ((array)$files as $id => $file) {
+            $file = realpath($file);
+            $nFiles[] = $file;
+            if (is_dir($file)) {
+                $iter = new RecursiveDirectoryIterator($file, \FilesystemIterator::SKIP_DOTS);
+                $cache = array();
+                foreach (new RecursiveIteratorIterator($iter) as $file) {
+                    $nFiles[] = (string)$file;
+                }
+            }
+        }
+
+        return $nFiles;
+    }
+
+    public function store($files, $data)
     {
-        $code = Templates::get('store')
-            ->render(compact('file', 'data'), true);
-        $path = $this->getStoragePath($file);
+        $path  = $this->getStoragePath($files);
+        $files = $this->normalizePath($files);
+        $code  = Templates::get('store')
+            ->render(compact('files', 'data'), true);
         File::write($path, $code);
     }
 
-    public function get($file, &$valid = NULL)
+    public function get($files, &$valid = NULL)
     {
-        $path = $this->getStoragePath($file);
+        $path = $this->getStoragePath($files);
         $data = NULL;
         $valid = false;
         if (is_file($path)) {
-            include $path;
+            require $path;
         }
         return $data;
     }
