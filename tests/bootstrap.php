@@ -8,3 +8,5 @@ Remember::setDirectory(__DIR__ . '/tmp/');
 Remember::cleanupAll();
 
 Remember::setDirectory(sys_get_temp_dir() . '/php-cache');
+
+@mkdir(__DIR__ . '/tmp');
