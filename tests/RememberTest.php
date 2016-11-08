@@ -112,5 +112,45 @@ class RememberTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(is_array($namespaces));
         $this->assertFalse(empty($namespaces));
     }
+
+    public function testRun()
+    {
+        $x = 0;
+        $fnc = Remember::wrap('foobarx', function() use (&$x) {
+            ++$x;
+            return -99;
+        });
+        $this->assertEquals(0, $x);
+        $this->assertEquals(-99, $fnc(__FILE__));
+        $this->assertEquals(1, $x);
+    }
+
+    public function testRun2()
+    {
+        $x = 0;
+        $fnc = Remember::wrap('foobarx', function() use (&$x) {
+            ++$x;
+            return -919;
+        });
+        $this->assertEquals(0, $x);
+        $this->assertEquals(-99, $fnc(__FILE__));
+        $this->assertEquals(0, $x);
+    }
+
+    public function testRun3()
+    {
+        $x = 0;
+        $self = $this;
+        $fnc = Remember::wrap('foobarx', function(Array $args, Array $nargs) use (&$x, $self) {
+            foreach ($nargs as $file) {
+                $self->assertTrue(is_file($file) || is_dir($file));
+                ++$x;
+            }
+            return -919;
+        });
+        $this->assertEquals(0, $x);
+        $this->assertEquals(-919, $fnc([__FILE__, __DIR__]));
+        $this->assertTrue($x >= 5);
+    }
 }
 

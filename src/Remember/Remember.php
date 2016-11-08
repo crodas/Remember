@@ -85,6 +85,13 @@ class Remember
         return $namespaces;
     }
 
+    public static function cleanupAll()
+    {
+        foreach (self::getNamespaces() as $ns) {
+            self::ns($ns)->cleanup();
+        }
+    }
+
     public function cleanup()
     {
         foreach (glob(self::$dir . '/' . $this->prefix . '/*.php') as $file) {
@@ -105,27 +112,32 @@ class Remember
         return self::$dir . '/' . $this->prefix . '/' . md5(serialize($files)) . '.php';
     }
 
-    public function normalizePath($files) {
-        $nFiles = array();
+    public function normalizeArgs($files) {
+        $nArgs = array();
         foreach ((array)$files as $id => $file) {
+            if (!is_readable($file)) {
+                continue;
+            }
             $file = realpath($file);
-            $nFiles[] = $file;
+            $nArgs[] = $file;
             if (is_dir($file)) {
                 $iter = new RecursiveDirectoryIterator($file, FilesystemIterator::SKIP_DOTS);
                 $cache = array();
                 foreach (new RecursiveIteratorIterator($iter) as $file) {
-                    $nFiles[] = (string)$file;
+                    $nArgs[] = (string)$file;
                 }
             }
         }
 
-        return $nFiles;
+        return $nArgs;
     }
 
     public function store($files, $data)
     {
         $path  = $this->getStoragePath($files);
-        $files = $this->normalizePath($files);
+        $files = $this->normalizeArgs($files);
+        $files = array_unique($files);
+        sort($files);
         $code  = Templates::get('store')
             ->render(compact('files', 'data'), true);
         File::write($path, $code);
@@ -140,6 +152,21 @@ class Remember
             require $path;
         }
         return $data;
+    }
+
+    public static function wrap($ns, Callable $function)
+    {
+        $ns = self::ns($ns);
+        return function($files) use ($ns, $function) {
+            $return = $ns->get($files, $isValid);
+            if ($isValid) {
+                return $return;
+            }
+            $normalized = $ns->normalizeArgs($files);
+            $return = $function($files, $normalized);
+            $ns->store($files, $return);
+            return $return;
+        };
     }
 }
 

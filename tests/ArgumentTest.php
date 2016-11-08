@@ -15,10 +15,11 @@ class ArgumentTest extends PHPUnit_Framework_TestCase
     public function testDirectoryInvalidators()
     {
         $x = Remember::ns('foobar');
-        $files = $x->normalizePAth(__DIR__ . '/../src');
+        $files = $x->normalizeArgs([__DIR__ . '/../src', $x = uniqid(true)]);
         $this->assertTrue(is_array($files));
         $this->assertTrue(is_dir($files[0]));
         $this->assertFalse(is_dir($files[1]));
+        $this->assertFalse(in_array($x, $files));
     }
 
     public function testSimpleWrite()

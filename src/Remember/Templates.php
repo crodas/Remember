@@ -124,11 +124,10 @@ namespace {
             foreach((array)$files as $f) {
 
                 $this->context['f'] = $f;
-                echo "if (!is_readable(";
+                echo "\$file = ";
                 var_export($f);
-                echo ") || filemtime(";
-                var_export($f);
-                echo ") > " . (filemtime($f)) . ") {\n    \$valid = false;\n    return;\n}\n";
+                echo ";\nif (!is_readable(\$file) || filemtime(\$file) > ";
+                echo filemtime($f) . ") {\n    \$valid = false;\n    return;\n}\n";
             }
             echo "\n\$data = ";
             var_export($data);

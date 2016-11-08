@@ -6,7 +6,8 @@
  */
 
 @foreach ((array)$files as $f) {
-if (!is_readable({{@$f}}) || filemtime({{@$f}}) > {{filemtime($f)}}) {
+$file = {{@$f}};
+if (!is_readable($file) || filemtime($file) > {{filemtime($f)}}) {
     $valid = false;
     return;
 }
