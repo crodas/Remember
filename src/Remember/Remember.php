@@ -73,6 +73,10 @@ class Remember
 
     public static function getNamespaces()
     {
+        if (!is_dir(self::$dir)) {
+            return array();
+        }
+
         $namespaces = array();
         $files = new DirectoryIterator(self::$dir);
         foreach ($files as $file) {
