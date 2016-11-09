@@ -158,8 +158,11 @@ class Remember
         return $data;
     }
 
-    public static function wrap($ns, Callable $function)
+    public static function wrap($ns, $function)
     {
+        if (!is_callable($function)) {
+            throw new InvalidArgumentException("second parameter must a be a function");
+        }
         $ns = self::ns($ns);
         return function($files) use ($ns, $function) {
             $return = $ns->get($files, $isValid);
