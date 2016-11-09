@@ -149,7 +149,7 @@ class RememberTest extends PHPUnit_Framework_TestCase
             return -919;
         });
         $this->assertEquals(0, $x);
-        $this->assertEquals(-919, $fnc([__FILE__, __DIR__]));
+        $this->assertEquals(-919, $fnc(array(__FILE__, __DIR__)));
         $this->assertTrue($x >= 5);
     }
 }
