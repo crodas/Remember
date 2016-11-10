@@ -38,11 +38,16 @@ namespace Remember;
 
 use crodas\FileUtil\File;
 use InvalidArgumentException;
+use DirectoryIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use FilesystemIterator;
 
 class Remember
 {
     protected static $dir;
     protected static $instances = array();
+    protected static $_includes = array();
     protected $prefix;
 
     private function __construct($prefix)
@@ -58,7 +63,7 @@ class Remember
         self::$dir = $dir;
     }
 
-    public static function init($prefix)
+    public static function ns($prefix)
     {
         if (empty(self::$instances[$prefix])) {
             self::$instances[$prefix] = new self($prefix);
@@ -67,36 +72,117 @@ class Remember
         return self::$instances[$prefix];
     }
 
-    public function getStoragePath($file)
+    public static function getNamespaces()
     {
-        if (is_string($file)) {
-            $file = realpath($file);
+        if (!is_dir(self::$dir)) {
+            return array();
+        }
+
+        $namespaces = array();
+        $files = new DirectoryIterator(self::$dir);
+        foreach ($files as $file) {
+            if($file->isDot() || $file->isFile()) {
+                continue;
+            }
+            $namespaces[] = $file->GetBaseName();
+        }
+
+        return $namespaces;
+    }
+
+    public static function cleanupAll()
+    {
+        foreach (self::getNamespaces() as $ns) {
+            self::ns($ns)->cleanup();
+        }
+    }
+
+    public function cleanup()
+    {
+        foreach (glob(self::$dir . '/' . $this->prefix . '/*.php') as $file) {
+            unlink($file);
+        }
+    }
+
+    public function getStoragePath($files)
+    {
+        if (is_string($files)) {
+            $files = realpath($files);
         } else {
-            foreach ($file as $i => $f) {
-                $file[$i] = realpath($f);
+            foreach ($files as $i => $f) {
+                $files[$i] = realpath($f);
             }
         }
 
-        return self::$dir . '/' . $this->prefix . '/' . md5(serialize($file)) . '.php';
+        return self::$dir . '/' . $this->prefix . '/' . md5(serialize($files)) . '.php';
     }
 
-    public function store($file, $data)
+    public function normalizeArgs($files) {
+        $nArgs = array();
+        foreach ((array)$files as $id => $file) {
+            if (!is_readable($file)) {
+                continue;
+            }
+            $file = realpath($file);
+            $nArgs[] = $file;
+            if (is_dir($file)) {
+                $iter = new RecursiveDirectoryIterator($file, FilesystemIterator::SKIP_DOTS);
+                $cache = array();
+                foreach (new RecursiveIteratorIterator($iter) as $file) {
+                    $nArgs[] = (string)$file;
+                }
+            }
+        }
+
+        return $nArgs;
+    }
+
+    public function store($files, $data)
     {
-        $code = Templates::get('store')
-            ->render(compact('file', 'data'), true);
-        $path = $this->getStoragePath($file);
+        $path  = $this->getStoragePath($files);
+        $files = $this->normalizeArgs($files);
+        $files = array_unique($files);
+        sort($files);
+        clearstatcache();
+        $code  = Templates::get('store')
+            ->render(compact('files', 'data'), true);
+
         File::write($path, $code);
+
+        if (defined('HHVM_VERSION')) {
+            self::$_includes[$path] = substr($code, 5);
+        }
     }
 
-    public function get($file, &$valid = NULL)
+    public function get($files, &$valid = NULL)
     {
-        $path = $this->getStoragePath($file);
+        $path = $this->getStoragePath($files);
         $data = NULL;
         $valid = false;
-        if (is_file($path)) {
-            include $path;
+        if (!empty(self::$_includes[$path])) {
+            eval(self::$_includes[$path]);
+        } else if (is_file($path)) {
+            require $path;
         }
         return $data;
+    }
+
+    public static function wrap($ns, $function)
+    {
+        if (!is_callable($function)) {
+            throw new InvalidArgumentException("second parameter must a be a function");
+        }
+        $ns = self::ns($ns);
+        return function($files) use ($ns, $function) {
+            $return = $ns->get($files, $isValid);
+            if ($isValid) {
+                return $return;
+            }
+            $normalized = $ns->normalizeArgs($files);
+            $return = $function($files, $normalized);
+            $ns->store($files, $return);
+            return $return;
+        };
     }
 }
 
