@@ -107,10 +107,10 @@ class Remember
     public function getStoragePath($files)
     {
         if (is_string($files)) {
-            $files = realpath($files);
+            $files = is_readable($files) ? realpath($files) :  $files;
         } else {
             foreach ($files as $i => $f) {
-                $files[$i] = realpath($f);
+                $files[$i] = is_readable($f) ? realpath($f) : $f;
             }
         }
 
