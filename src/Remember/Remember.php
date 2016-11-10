@@ -110,7 +110,7 @@ class Remember
             $files = is_readable($files) ? realpath($files) :  $files;
         } else {
             foreach ($files as $i => $f) {
-                $files[$i] = is_readable($f) ? realpath($f) : $f;
+                $files[$i] = is_scalar($f) && is_readable($f) ? realpath($f) : $f;
             }
         }
 
@@ -120,7 +120,7 @@ class Remember
     public function normalizeArgs($files) {
         $nArgs = array();
         foreach ((array)$files as $id => $file) {
-            if (!is_readable($file)) {
+            if (!is_scalar($file) || !is_readable($file)) {
                 continue;
             }
             $file = realpath($file);
