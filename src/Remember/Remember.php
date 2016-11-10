@@ -47,6 +47,7 @@ class Remember
 {
     protected static $dir;
     protected static $instances = array();
+    protected static $_includes = array();
     protected $prefix;
 
     private function __construct($prefix)
@@ -142,9 +143,15 @@ class Remember
         $files = $this->normalizeArgs($files);
         $files = array_unique($files);
         sort($files);
+        clearstatcache();
         $code  = Templates::get('store')
             ->render(compact('files', 'data'), true);
+
         File::write($path, $code);
+
+        if (defined('HHVM_VERSION')) {
+            self::$_includes[$path] = substr($code, 5);
+        }
     }
 
     public function get($files, &$valid = NULL)
@@ -152,7 +159,9 @@ class Remember
         $path = $this->getStoragePath($files);
         $data = NULL;
         $valid = false;
-        if (is_file($path)) {
+        if (!empty(self::$_includes[$path])) {
+            eval(self::$_includes[$path]);
+        } else if (is_file($path)) {
             require $path;
         }
         return $data;

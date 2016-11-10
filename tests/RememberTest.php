@@ -40,7 +40,7 @@ class RememberTest extends PHPUnit_Framework_TestCase
 
         touch($tmp);
         $X = $cache->get($tmp, $isValid);
-        $this->assertNotTrue($isValid);
+        $this->assertFalse($isValid);
         $this->assertNull($X);
     }
 
