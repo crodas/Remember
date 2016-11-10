@@ -123,6 +123,10 @@ class RememberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(0, $x);
         $this->assertEquals(-99, $fnc(__FILE__));
         $this->assertEquals(1, $x);
+        $this->assertEquals(-99, $fnc(__FILE__));
+        $this->assertEquals(1, $x);
+        $this->assertEquals(-99, $fnc([__FILE__, 'xxx']));
+        $this->assertEquals(2, $x);
     }
 
     public function testRun2()
