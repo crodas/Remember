@@ -129,8 +129,10 @@ class Remember
                 $iter = new RecursiveDirectoryIterator($file, FilesystemIterator::SKIP_DOTS);
                 $cache = array();
                 foreach (new RecursiveIteratorIterator($iter) as $file) {
+                    $nArgs[] = $file->getPath();
                     $nArgs[] = (string)$file;
                 }
+                $nArgs = array_unique($nArgs);
             }
         }
 

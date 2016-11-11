@@ -18,7 +18,7 @@ class ArgumentTest extends PHPUnit_Framework_TestCase
         $files = $x->normalizeArgs(array(__DIR__ . '/../src', $x = uniqid(true)));
         $this->assertTrue(is_array($files));
         $this->assertTrue(is_dir($files[0]));
-        $this->assertFalse(is_dir($files[1]));
+        $this->assertFalse(is_dir($files[2]));
         $this->assertFalse(in_array($x, $files));
     }
 
