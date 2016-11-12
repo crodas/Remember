@@ -139,6 +139,33 @@ class Remember
         return $nArgs;
     }
 
+    protected function hasCircularDependency($object, & $stack = array())
+    {
+        if (is_scalar($object)) {
+            return false;
+        }
+        
+
+        foreach ($object as $key => $value) {
+            if (is_scalar($value)) {
+                continue;
+            }
+
+            if (is_object($value)) {
+                if (in_array($value, $stack)) {
+                    return true;
+                }
+                $stack[] = $value;
+            }
+
+            if ($this->hasCircularDependency($value, $stack)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function store($files, $data)
     {
         $path  = $this->getStoragePath($files);
@@ -146,8 +173,16 @@ class Remember
         $files = array_unique($files);
         sort($files);
         clearstatcache();
+
+        if (!$this->hasCircularDependency($data)) {
+            $sData = var_export($data, true);
+        } else {
+            $sData = serialize($data);
+            $serialized = true;
+        }
+
         $code  = Templates::get('store')
-            ->render(compact('files', 'data'), true);
+            ->render(compact('files', 'sData', 'serialized'), true);
 
         File::write($path, $code);
 
@@ -175,14 +210,15 @@ class Remember
             throw new InvalidArgumentException("second parameter must a be a function");
         }
         $ns = self::ns($ns);
-        return function($files) use ($ns, $function) {
-            $return = $ns->get($files, $isValid);
+        return function($args) use ($ns, $function) {
+            $args   = (array)$args;
+            $return = $ns->get($args, $isValid);
             if ($isValid) {
                 return $return;
             }
-            $normalized = $ns->normalizeArgs($files);
-            $return = $function($files, $normalized);
-            $ns->store($files, $return);
+            $files  = $ns->normalizeArgs($args);
+            $return = $function($args, $files);
+            $ns->store($args, $return);
             return $return;
         };
     }
