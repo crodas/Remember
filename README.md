@@ -12,7 +12,7 @@ I love generating code and I needed a way of rebuilding only if something change
 ```
 use Remember\Remember;
 
-$function = Remember::wrap('name', function(Array $args) {
+$function = Remember::wrap('name', function(Array $args, Array $files) {
     // do some that is expensive
     return $result;
 });

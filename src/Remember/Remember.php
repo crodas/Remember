@@ -68,7 +68,6 @@ class Remember
         if (empty(self::$instances[$prefix])) {
             self::$instances[$prefix] = new self($prefix);
         }
-
         return self::$instances[$prefix];
     }
 
@@ -139,15 +138,48 @@ class Remember
         return $nArgs;
     }
 
-    public function store($files, $data)
+    protected function hasCircularDependency($object, & $stack = array())
     {
-        $path  = $this->getStoragePath($files);
-        $files = $this->normalizeArgs($files);
-        $files = array_unique($files);
+        if (is_scalar($object)) {
+            return false;
+        }
+        
+
+        foreach ($object as $key => $value) {
+            if (is_scalar($value)) {
+                continue;
+            }
+
+            if (is_object($value)) {
+                if (in_array($value, $stack)) {
+                    return true;
+                }
+                $stack[] = $value;
+            }
+
+            if ($this->hasCircularDependency($value, $stack)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function cacheData($path, $filesToWatch, $data)
+    {
+        $files = array_unique($filesToWatch);
         sort($files);
         clearstatcache();
+
+        if (!$this->hasCircularDependency($data)) {
+            $sData = var_export($data, true);
+        } else {
+            $sData = serialize($data);
+            $serialized = true;
+        }
+
         $code  = Templates::get('store')
-            ->render(compact('files', 'data'), true);
+            ->render(compact('files', 'sData', 'serialized'), true);
 
         File::write($path, $code);
 
@@ -156,9 +188,15 @@ class Remember
         }
     }
 
-    public function get($files, &$valid = NULL)
+    public function store($files, $data)
     {
-        $path = $this->getStoragePath($files);
+        $path  = $this->getStoragePath($files);
+        $files = $this->normalizeArgs($files);
+        return $this->cacheData($path, $files, $data);
+    }
+
+    public function getCachedData($path, &$valid = NULL)
+    {
         $data = NULL;
         $valid = false;
         if (!empty(self::$_includes[$path])) {
@@ -169,20 +207,34 @@ class Remember
         return $data;
     }
 
+    public function get($files, &$valid = NULL)
+    {
+        $path = $this->getStoragePath($files);
+        return $this->getCachedData($path, $valid);
+    }
+
     public static function wrap($ns, $function)
     {
         if (!is_callable($function)) {
             throw new InvalidArgumentException("second parameter must a be a function");
         }
         $ns = self::ns($ns);
-        return function($files) use ($ns, $function) {
-            $return = $ns->get($files, $isValid);
+        return function($args) use ($ns, $function) {
+            $args   = (array)$args;
+            $path   = $ns->getStoragePath($args);
+            $return = $ns->getCachedData($path, $isValid);
             if ($isValid) {
                 return $return;
             }
-            $normalized = $ns->normalizeArgs($files);
-            $return = $function($files, $normalized);
-            $ns->store($files, $return);
+            $nargs  = $args; /* copy args */
+            $files  = $ns->normalizeArgs($args);
+            $return = $function($args, $files);
+
+            if ($nargs !== $args) {
+                $files  = $ns->normalizeArgs($args);
+            }
+
+            $ns->cacheData($path, $files, $return);
             return $return;
         };
     }

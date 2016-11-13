@@ -152,9 +152,32 @@ class RememberTest extends PHPUnit_Framework_TestCase
             }
             return -919;
         });
-        $this->assertEquals(0, $x);
+        $this->assertequals(0, $x);
         $this->assertEquals(-919, $fnc(array(__FILE__, __DIR__)));
         $this->assertTrue($x >= 5);
+    }
+
+    public function testRecursive() {
+        $x = 0;
+        $loader = Remember::wrap('foobaryy', function(&$args) use (&$x) {
+            $args[] = __FILE__;
+            $object = new stdClass;
+            $another = new stdClass;
+            $another->object = $object;
+            $object->var = $another;
+            ++$x;
+
+            return $object;
+        });
+
+        $this->assertEquals(0, $x);
+        $a = $loader('foobar');
+        $this->assertEquals(1, $x);
+
+        $b = $loader('foobar');
+        $this->assertEquals(1, $x);
+
+        $this->assertEquals($a, $b);
     }
 }
 

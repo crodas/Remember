@@ -11,6 +11,9 @@ if (!is_readable($file) || filemtime($file) > {{filemtime($f)}}) {
     return;
 }
 @end
-
-$data = {{@$data}};
+@if (empty($serialized))
+    $data = {{$sData}};
+@else
+    $data = unserialize({{@$sData}});
+@endif
 $valid = true;

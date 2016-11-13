@@ -129,9 +129,15 @@ namespace {
                 echo ";\nif (!is_readable(\$file) || filemtime(\$file) > ";
                 echo filemtime($f) . ") {\n    \$valid = false;\n    return;\n}\n";
             }
-            echo "\n\$data = ";
-            var_export($data);
-            echo ";\n\$valid = true;\n";
+            if (empty($serialized)) {
+                echo "    \$data = " . ($sData) . ";\n";
+            }
+            else {
+                echo "    \$data = unserialize(";
+                var_export($sData);
+                echo ");\n";
+            }
+            echo "\$valid = true;\n";
 
             if ($return) {
                 return ob_get_clean();
