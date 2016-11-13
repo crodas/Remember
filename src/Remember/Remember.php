@@ -68,7 +68,6 @@ class Remember
         if (empty(self::$instances[$prefix])) {
             self::$instances[$prefix] = new self($prefix);
         }
-
         return self::$instances[$prefix];
     }
 
@@ -166,7 +165,7 @@ class Remember
         return false;
     }
 
-    protected function _store($path, $filesToWatch, $data)
+    public function cacheData($path, $filesToWatch, $data)
     {
         $files = array_unique($filesToWatch);
         sort($files);
@@ -193,10 +192,10 @@ class Remember
     {
         $path  = $this->getStoragePath($files);
         $files = $this->normalizeArgs($files);
-        return $this->_store($path, $files, $data);
+        return $this->cacheData($path, $files, $data);
     }
 
-    public function _get($path, &$valid = NULL)
+    public function getCachedData($path, &$valid = NULL)
     {
         $data = NULL;
         $valid = false;
@@ -211,7 +210,7 @@ class Remember
     public function get($files, &$valid = NULL)
     {
         $path = $this->getStoragePath($files);
-        return $this->_get($path, $valid);
+        return $this->getCachedData($path, $valid);
     }
 
     public static function wrap($ns, $function)
@@ -223,7 +222,7 @@ class Remember
         return function($args) use ($ns, $function) {
             $args   = (array)$args;
             $path   = $ns->getStoragePath($args);
-            $return = $ns->_get($path, $isValid);
+            $return = $ns->getCachedData($path, $isValid);
             if ($isValid) {
                 return $return;
             }
@@ -235,7 +234,7 @@ class Remember
                 $files  = $ns->normalizeArgs($args);
             }
 
-            $ns->_store($path, $files, $return);
+            $ns->cacheData($path, $files, $return);
             return $return;
         };
     }
