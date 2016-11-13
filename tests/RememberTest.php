@@ -160,6 +160,7 @@ class RememberTest extends PHPUnit_Framework_TestCase
     public function testRecursive() {
         $x = 0;
         $loader = Remember::wrap('foobaryy', function(&$args) use (&$x) {
+            $args[] = __FILE__;
             $object = new stdClass;
             $another = new stdClass;
             $another->object = $object;

@@ -166,11 +166,9 @@ class Remember
         return false;
     }
 
-    public function store($files, $data)
+    protected function _store($path, $filesToWatch, $data)
     {
-        $path  = $this->getStoragePath($files);
-        $files = $this->normalizeArgs($files);
-        $files = array_unique($files);
+        $files = array_unique($filesToWatch);
         sort($files);
         clearstatcache();
 
@@ -191,9 +189,15 @@ class Remember
         }
     }
 
-    public function get($files, &$valid = NULL)
+    public function store($files, $data)
     {
-        $path = $this->getStoragePath($files);
+        $path  = $this->getStoragePath($files);
+        $files = $this->normalizeArgs($files);
+        return $this->_store($path, $files, $data);
+    }
+
+    public function _get($path, &$valid = NULL)
+    {
         $data = NULL;
         $valid = false;
         if (!empty(self::$_includes[$path])) {
@@ -204,6 +208,12 @@ class Remember
         return $data;
     }
 
+    public function get($files, &$valid = NULL)
+    {
+        $path = $this->getStoragePath($files);
+        return $this->_get($path, $valid);
+    }
+
     public static function wrap($ns, $function)
     {
         if (!is_callable($function)) {
@@ -212,13 +222,20 @@ class Remember
         $ns = self::ns($ns);
         return function($args) use ($ns, $function) {
             $args   = (array)$args;
-            $return = $ns->get($args, $isValid);
+            $path   = $ns->getStoragePath($args);
+            $return = $ns->_get($path, $isValid);
             if ($isValid) {
                 return $return;
             }
+            $nargs  = $args; /* copy args */
             $files  = $ns->normalizeArgs($args);
             $return = $function($args, $files);
-            $ns->store($args, $return);
+
+            if ($nargs !== $args) {
+                $files  = $ns->normalizeArgs($args);
+            }
+
+            $ns->_store($path, $files, $return);
             return $return;
         };
     }
