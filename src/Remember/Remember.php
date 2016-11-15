@@ -240,4 +240,8 @@ class Remember
     }
 }
 
-Remember::setDirectory(sys_get_temp_dir() . '/php-cache');
+$defaultDir = sys_get_temp_dir() . '/php-cache/';
+if (!empty($_SERVER['HTTP_HOST']) && preg_match("/^[a-z0-9_\-\.]+$/i", $_SERVER['HTTP_HOST'])) {
+    $defaultDir .= $_SERVER['HTTP_HOST'];
+}
+Remember::setDirectory($defaultDir);
