@@ -144,6 +144,9 @@ class Remember
             return false;
         }
         
+        if (is_object($object) && !is_callable(array(get_class($object), '__set_state'))) {
+            return true;
+        }
 
         foreach ($object as $key => $value) {
             if (is_scalar($value)) {
@@ -151,7 +154,7 @@ class Remember
             }
 
             if (is_object($value)) {
-                if (in_array($value, $stack)) {
+                if (in_array($value, $stack) || !is_callable($method)) {
                     return true;
                 }
                 $stack[] = $value;
