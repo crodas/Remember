@@ -144,8 +144,8 @@ class Remember
         sort($files);
         clearstatcache();
 
-        $sData = serialize($data);
-        $serialized = true;
+        $serialized = !is_scalar($data);
+        $sData = $serialized ? serialize($data) : $data;
 
         $code  = Templates::get('store')
             ->render(compact('files', 'sData', 'serialized'), true);
