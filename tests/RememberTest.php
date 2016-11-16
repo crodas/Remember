@@ -2,6 +2,9 @@
 
 use Remember\Remember;
 
+class classWithoutSetState {
+}
+
 class RememberTest extends PHPUnit_Framework_TestCase
 {
     public function testFileDoesNotExists()
@@ -157,7 +160,8 @@ class RememberTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($x >= 5);
     }
 
-    public function testRecursive() {
+    public function testRecursive()
+    {
         $x = 0;
         $loader = Remember::wrap('foobaryy', function(&$args) use (&$x) {
             $args[] = __FILE__;
@@ -178,6 +182,21 @@ class RememberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, $x);
 
         $this->assertEquals($a, $b);
+    }
+
+    public function testObjectNoSetState()
+    {
+        $loader = Remember::wrap('fooobar', function($args) {
+            $obj = new classWithoutSetState;
+            $obj->foo = 'bar';
+            return $obj;
+        });
+        $rnd = uniqid(true);
+        $obj = $loader($rnd);
+        $this->assertTrue($obj instanceof classWithoutSetState);
+
+        $obj2 = $loader($rnd);
+        $this->assertEquals($obj, $obj2);
     }
 }
 

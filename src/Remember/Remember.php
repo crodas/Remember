@@ -138,45 +138,14 @@ class Remember
         return $nArgs;
     }
 
-    protected function hasCircularDependency($object, & $stack = array())
-    {
-        if (is_scalar($object)) {
-            return false;
-        }
-        
-
-        foreach ($object as $key => $value) {
-            if (is_scalar($value)) {
-                continue;
-            }
-
-            if (is_object($value)) {
-                if (in_array($value, $stack)) {
-                    return true;
-                }
-                $stack[] = $value;
-            }
-
-            if ($this->hasCircularDependency($value, $stack)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public function cacheData($path, $filesToWatch, $data)
     {
         $files = array_unique($filesToWatch);
         sort($files);
         clearstatcache();
 
-        if (!$this->hasCircularDependency($data)) {
-            $sData = var_export($data, true);
-        } else {
-            $sData = serialize($data);
-            $serialized = true;
-        }
+        $serialized = !is_scalar($data);
+        $sData = $serialized ? serialize($data) : $data;
 
         $code  = Templates::get('store')
             ->render(compact('files', 'sData', 'serialized'), true);
@@ -204,7 +173,7 @@ class Remember
         } else if (is_file($path)) {
             require $path;
         }
-        return $data;
+        return $valid ? $data : NULL;
     }
 
     public function get($files, &$valid = NULL)
@@ -240,4 +209,8 @@ class Remember
     }
 }
 
-Remember::setDirectory(sys_get_temp_dir() . '/php-cache');
+$defaultDir = sys_get_temp_dir() . '/php-cache/';
+if (!empty($_SERVER['HTTP_HOST']) && preg_match("/^[a-z0-9_\-\.]+$/i", $_SERVER['HTTP_HOST'])) {
+    $defaultDir .= $_SERVER['HTTP_HOST'];
+}
+Remember::setDirectory($defaultDir);
