@@ -138,48 +138,14 @@ class Remember
         return $nArgs;
     }
 
-    protected function hasCircularDependency($object, & $stack = array())
-    {
-        if (is_scalar($object)) {
-            return false;
-        }
-        
-        if (is_object($object) && !is_callable(array(get_class($object), '__set_state'))) {
-            return true;
-        }
-
-        foreach ($object as $key => $value) {
-            if (is_scalar($value)) {
-                continue;
-            }
-
-            if (is_object($value)) {
-                if (in_array($value, $stack) || !is_callable($method)) {
-                    return true;
-                }
-                $stack[] = $value;
-            }
-
-            if ($this->hasCircularDependency($value, $stack)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public function cacheData($path, $filesToWatch, $data)
     {
         $files = array_unique($filesToWatch);
         sort($files);
         clearstatcache();
 
-        if (!$this->hasCircularDependency($data)) {
-            $sData = var_export($data, true);
-        } else {
-            $sData = serialize($data);
-            $serialized = true;
-        }
+        $sData = serialize($data);
+        $serialized = true;
 
         $code  = Templates::get('store')
             ->render(compact('files', 'sData', 'serialized'), true);
@@ -207,7 +173,7 @@ class Remember
         } else if (is_file($path)) {
             require $path;
         }
-        return $data;
+        return $valid ? $data : NULL;
     }
 
     public function get($files, &$valid = NULL)
