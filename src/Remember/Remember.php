@@ -43,6 +43,12 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use FilesystemIterator;
 
+function realpath($path)
+{
+    $rpath = \realpath($path);
+    return $rpath ? $rpath : $path;
+}
+
 class Remember
 {
     protected static $dir;
