@@ -1,11 +1,12 @@
 <?php
 
 use Remember\Remember;
+use PHPUnit\Framework\TestCase;
 
 class classWithoutSetState {
 }
 
-class RememberTest extends PHPUnit_Framework_TestCase
+class RememberTest extends TestCase
 {
     public function testFileDoesNotExists()
     {

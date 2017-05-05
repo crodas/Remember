@@ -1,8 +1,9 @@
 <?php
 
 use Remember\Remember;
+use PHPUnit\Framework\TestCase;
 
-class ArgumentTest extends PHPUnit_Framework_TestCase
+class ArgumentTest extends TestCase
 {
     /**
      *  @expectedException InvalidArgumentException
