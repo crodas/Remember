@@ -1,4 +1,5 @@
 language: php
+distro: trusty
 script: 
     - ./vendor/bin/phpunit
 
