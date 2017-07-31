@@ -209,7 +209,7 @@ class Remember
     }
 
     /**
-     * Destroy all the cache entries in this current namespace
+     * Destroys all the cache entries in this current namespace
      *
      * @return void
      */
