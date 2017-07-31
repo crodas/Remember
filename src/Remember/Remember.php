@@ -297,7 +297,7 @@ class Remember
      *
      * @return void
      */
-    protected function writeCache($path, $filesToWatch, $data)
+    public function writeCache($path, $filesToWatch, $data)
     {
         $files = array_unique($filesToWatch);
         sort($files);
@@ -375,7 +375,7 @@ class Remember
      *
      * @return mixed The cached data or NULL if the cache is no valid
      */
-    protected function loadDataFromCache($filepath, &$valid = NULL)
+    public function loadDataFromCache($filepath, &$valid = NULL)
     {
         $data = NULL;
         $valid = false;
