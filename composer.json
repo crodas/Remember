@@ -21,6 +21,7 @@
     },
     "require-dev": {
         "crodas/simple-view-engine": "^0.1.37",
-        "crodas/phpunit-compat": "^1.7"
+        "crodas/phpunit-compat": "^1.7",
+        "phpdocumentor/phpdocumentor": "^2.9"
     }
 }
