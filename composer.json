@@ -3,7 +3,7 @@
     "description": "Remember computations you did before (file cache)",
     "type": "library",
     "license": "MIT",
-    "version": "v0.4.3",
+    "version": "v0.4.4",
     "authors": [
         {
             "name": "Cesar Rodas",
