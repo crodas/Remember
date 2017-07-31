@@ -19,7 +19,7 @@ $function = Remember::wrap('name', function(Array $args, Array $files) {
 
 // It will calculate once and cache the result
 // until __FILE__ changes.
-$result = $ $function([__FILE__, 'foobar']);
+$result = $function([__FILE__, 'foobar']);
 ```
 
 ## Low level API

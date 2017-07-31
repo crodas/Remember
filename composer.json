@@ -3,7 +3,7 @@
     "description": "Remember computations you did before (file cache)",
     "type": "library",
     "license": "MIT",
-    "version": "v0.4.3",
+    "version": "v0.4.4",
     "authors": [
         {
             "name": "Cesar Rodas",
@@ -20,6 +20,8 @@
         "crodas/file-util": "^0.2.2"
     },
     "require-dev": {
-        "crodas/simple-view-engine": "^0.1.37"
+        "crodas/simple-view-engine": "^0.1.37",
+        "crodas/phpunit-compat": "^1.7",
+        "phpdocumentor/phpdocumentor": "^2.9"
     }
 }
