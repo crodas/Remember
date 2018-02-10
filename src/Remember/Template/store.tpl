@@ -5,18 +5,18 @@
  *
  */
 
-@if ($serialized)
-$data = unserialize({{@$sData}});
-@else
-$data = {{@$sData}};
-@end
-
 @foreach ((array)$files as $f) {
 $file = {{@$f}};
 if (!is_readable($file) || filemtime($file) > {{filemtime($f)}}) {
     $valid = false;
     return;
 }
+@end
+
+@if ($serialized)
+$data = unserialize({{@$sData}});
+@else
+$data = {{@$sData}};
 @end
 
 $valid = true;
