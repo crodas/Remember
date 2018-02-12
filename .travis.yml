@@ -36,4 +36,4 @@ matrix:
 
 
 before_script:
-    - composer install
+    - composer install  --prefer-dist --no-dev
