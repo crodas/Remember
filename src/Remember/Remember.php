@@ -49,13 +49,13 @@ use FilesystemIterator;
 /**
  * Remember
  *
- * This class provides an easy to use cache layer. It is designed to be simple and easy to 
+ * This class provides an easy to use cache layer. It is designed to be simple and easy to
  * use. It abstract all the details like cache invalidation, serialization and efficient loading
  * of the cache into memory, making it super easy to use it.
  *
  * @author Cesar Rodas <crodas@php.net>
  * @package Remember
- * 
+ *
  */
 class Remember
 {
@@ -80,7 +80,7 @@ class Remember
      * Some PHP version does not include the same twice (HHVM), even if it changed.
      * This is a shared array among all instances and loads the source code (so it will
      * eval'ed in this request).
-     * 
+     *
      * @var array
      */
     protected static $_includes = array();
@@ -99,7 +99,7 @@ class Remember
      * Creates a new instance
      *
      * Creates an instance of Remember. This constructor is private on porpuse, so it can be only
-     * be instantiated by calling `Remember::ns`. 
+     * be instantiated by calling `Remember::ns`.
      *
      * Each remember object represents a "cache namespace", which stores cache values of a certain type. The
      * name of the cache is determined by the arguments used.
@@ -121,7 +121,7 @@ class Remember
      * with function though is that it returns FALSE is the file does not exists.
      *
      * Sometime we need to call realpath in a file which does exists (yet) but still want to get
-     * the realpath whenver it is possible. This function will return `realpath`'s output or 
+     * the realpath whenver it is possible. This function will return `realpath`'s output or
      * the input given when realpth fails.
      *
      * @param string $filepath
@@ -151,7 +151,7 @@ class Remember
     /**
      * Returns a Remember instance for the given namespace
      *
-     * The __constructor are private and they are exposed to PHP through this static method. 
+     * The __constructor are private and they are exposed to PHP through this static method.
      *
      * This method makes sure that each Remember instance per namespace is constructed at most
      * once and they are shared among instances.
@@ -161,7 +161,7 @@ class Remember
      *
      * @param string $namespace
      *
-     * @return Remember 
+     * @return Remember
      */
     public static function ns($namespace)
     {
@@ -209,7 +209,7 @@ class Remember
     }
 
     /**
-     * Destroy all the cache entries in this current namespace
+     * Destroys all the cache entries in this current namespace
      *
      * @return void
      */
@@ -319,7 +319,7 @@ class Remember
     /**
      * Stores data into the cache.
      *
-     * This is an easy to use public interface to store data into the cache. This is 
+     * This is an easy to use public interface to store data into the cache. This is
      * for those who don't want to use the easier to use interface (`Remember::wrap`).
      *
      * This function takes two arguments, the first is an array of files which invalidates
@@ -393,7 +393,7 @@ class Remember
      * This function is the easiest way of using Remember. It basically takes two arguments, a name
      * and a function (It must be callable) and return a closure.
      *
-     * The returned closure wraps the function to cache, calling it when the cache is empty or 
+     * The returned closure wraps the function to cache, calling it when the cache is empty or
      * when some of the argument changes, but before returning the return value it caches it. The next
      * time the closure is called it will return the cached value instead. "The next time" can be right away,
      * the next request, or tomorrow.
@@ -442,10 +442,25 @@ class Remember
             return $return;
         };
     }
+
+    /**
+     * Sets the default directory where the cache files are stored.
+     *
+     * This function chooses where the cache are stored by default, making Remember usable by default. The function
+     * is always inside the OS temporary folder (thanks to `sys_get_temp_dir()`) storing the cache outside of the
+     * WWW-root. If someone is serving their entire temporary folder through their webserver there is nothing we can
+     * do to hide it. Although executing a cache file is harmless.
+     *
+     * @return void
+     */
+    public static function setDefaultDirectory()
+    {
+        $defaultDir = sys_get_temp_dir() . '/php/remember/';
+        if (!empty($_SERVER['HTTP_HOST']) && preg_match("/^[a-z0-9_\-\.]+$/i", $_SERVER['HTTP_HOST'])) {
+            $defaultDir .= $_SERVER['HTTP_HOST'];
+        }
+        self::setDirectory($defaultDir);
+    }
 }
 
-$defaultDir = sys_get_temp_dir() . '/php-cache/';
-if (!empty($_SERVER['HTTP_HOST']) && preg_match("/^[a-z0-9_\-\.]+$/i", $_SERVER['HTTP_HOST'])) {
-    $defaultDir .= $_SERVER['HTTP_HOST'];
-}
-Remember::setDirectory($defaultDir);
+Remember::setDefaultDirectory();
