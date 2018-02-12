@@ -5,6 +5,8 @@
  *
  */
 
+$data = NULL;
+
 @foreach ((array)$files as $f) {
 $file = {{@$f}};
 if (!is_readable($file) || filemtime($file) > {{filemtime($f)}}) {
