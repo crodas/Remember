@@ -31,4 +31,15 @@ class ArgumentTest extends TestCase
         $path2 = $y->getStoragePath(__FILE__);
         $this->assertNotEquals($path1, $path2);
     }
+
+    public function testInvalidHttpHost()
+    {
+        Remember::setDefaultDirectory();
+        $dir = Remember::getDirectory();
+
+        $_SERVER['HTTP_HOST'] = '/Var/www/fooo';
+        Remember::setDefaultDirectory();
+
+        $this->assertEquals($dir . '_Var_www_fooo', Remember::getDirectory());
+    }
 }

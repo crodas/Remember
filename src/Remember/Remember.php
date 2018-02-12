@@ -149,6 +149,16 @@ class Remember
     }
 
     /**
+     * Returns the current directory where the temporary files are stored
+     *
+     * @return string
+     */
+    public static function getDirectory()
+    {
+        return self::$dir;
+    }
+
+    /**
      * Returns a Remember instance for the given namespace
      *
      * The __constructor are private and they are exposed to PHP through this static method.
@@ -456,8 +466,8 @@ class Remember
     public static function setDefaultDirectory()
     {
         $defaultDir = sys_get_temp_dir() . '/php/remember/';
-        if (!empty($_SERVER['HTTP_HOST']) && preg_match("/^[a-z0-9_\-\.]+$/i", $_SERVER['HTTP_HOST'])) {
-            $defaultDir .= $_SERVER['HTTP_HOST'];
+        if (!empty($_SERVER['HTTP_HOST'])) {
+            $defaultDir .= preg_replace("/[^a-z0-9_\-\.]/i", "_", $_SERVER['HTTP_HOST']);
         }
         self::setDirectory($defaultDir);
     }
