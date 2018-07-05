@@ -465,7 +465,11 @@ class Remember
      */
     public static function setDefaultDirectory()
     {
-        $defaultDir = sys_get_temp_dir() . '/php/remember/';
+        if (is_callable('storage_path')) {
+            $defaultDir = storage_path('framework/cache/remember/');
+        } else {
+            $defaultDir = sys_get_temp_dir() . '/php/remember/';
+        }
         if (!empty($_SERVER['HTTP_HOST'])) {
             $defaultDir .= preg_replace("/[^a-z0-9_\-\.]/i", "_", $_SERVER['HTTP_HOST']);
         }
